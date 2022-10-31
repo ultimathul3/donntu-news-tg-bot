@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"donntu-news-tg-bot/logger"
 	"donntu-news-tg-bot/types"
 	"encoding/json"
 	"fmt"
@@ -14,27 +15,42 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 )
 
+var (
+	fileLog *logger.Logger
+)
+
 func handler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Fatal(err)
+		fileLog.Info("body read error:", err)
+		return
 	}
 
 	var update types.Update
 	err = json.Unmarshal(body, &update)
 	if err != nil {
+		fileLog.Info("json error:", err)
+		return
+	}
+
+	fileLog.Info("update:", fmt.Sprintf("%+v", update))
+}
+
+func init() {
+	var err error
+
+	fileLog, err = logger.New("log")
+	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("%+v\n", update)
+	err = godotenv.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
 	certManager := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
 		HostPolicy: autocert.HostWhitelist(os.Getenv("DOMAIN")),
@@ -52,5 +68,8 @@ func main() {
 
 	go http.ListenAndServe(":http", certManager.HTTPHandler(nil))
 
-	log.Fatal(server.ListenAndServeTLS("", ""))
+	err := server.ListenAndServeTLS("", "")
+	if err != nil {
+		log.Fatal(err)
+	}
 }
