@@ -3,7 +3,6 @@ package api
 import (
 	"donntu-news-tg-bot/types"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -21,18 +20,19 @@ func request(UrlWithParams string) (*types.Response, error) {
 		accessToken, UrlWithParams,
 	))
 	if err != nil {
-		return nil, errors.New("response error: " + err.Error())
+		return nil, fmt.Errorf("response error (api): %s", err.Error())
 	}
+	defer r.Body.Close()
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		return nil, errors.New("response body read error: " + err.Error())
+		return nil, fmt.Errorf("response body read error (api): %s", err.Error())
 	}
 
 	var response *types.Response
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return nil, errors.New("response json error: " + err.Error())
+		return nil, fmt.Errorf("response json error (api): %s", err.Error())
 	}
 
 	return response, nil

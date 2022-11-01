@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"donntu-news-tg-bot/handler"
 	"donntu-news-tg-bot/logger"
 	"log"
 	"net/http"
@@ -11,13 +12,9 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 )
 
-var (
-	fileLog *logger.Logger
-)
-
 func init() {
 	initLogger()
-	initEnvFile()
+	initEnv()
 }
 
 func main() {
@@ -27,7 +24,7 @@ func main() {
 		Cache:      autocert.DirCache("certs"),
 	}
 
-	http.HandleFunc("/", handler)
+	http.HandleFunc("/", handler.HandleRequest)
 
 	server := &http.Server{
 		Addr: ":https",
@@ -38,13 +35,15 @@ func main() {
 
 	go http.ListenAndServe(":http", certManager.HTTPHandler(nil))
 
+	logger.Log.Info("server started")
+
 	err := server.ListenAndServeTLS("", "")
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func initEnvFile() {
+func initEnv() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal(err)
@@ -64,7 +63,7 @@ func initEnvFile() {
 func initLogger() {
 	var err error
 
-	fileLog, err = logger.New("log")
+	logger.Log, err = logger.New("log")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -11,6 +11,10 @@ type Logger struct {
 	logger  *log.Logger
 }
 
+var (
+	Log *Logger
+)
+
 func New(filename string) (*Logger, error) {
 	logger := &Logger{}
 	var err error
