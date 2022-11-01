@@ -1,10 +1,12 @@
 package main
 
 import (
+	"donntu-news-tg-bot/api"
 	"donntu-news-tg-bot/types"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 )
@@ -29,4 +31,24 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fileLog.Info("update:", fmt.Sprintf("%+v", update))
+
+	updateHandler(update)
+}
+
+func updateHandler(update types.Update) {
+	var text string
+	var chatId int64
+	if update.Message != nil {
+		text = update.Message.Text
+		chatId = update.Message.Chat.Id
+	} else if update.Channel_post != nil {
+		text = update.Channel_post.Text
+		chatId = update.Channel_post.Chat.Id
+	}
+
+	response, err := api.SendMessage(chatId, text)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fileLog.Info("send message:", fmt.Sprintf("%+v", response))
 }
