@@ -13,7 +13,7 @@ var (
 	tgApi = "https://api.telegram.org/"
 )
 
-func request(UrlWithParams string) (*types.Response, error) {
+func get(UrlWithParams string) ([]byte, error) {
 	accessToken := os.Getenv("ACCESS_TOKEN")
 
 	r, err := http.Get(tgApi + fmt.Sprintf("bot%s/%s",
@@ -26,7 +26,16 @@ func request(UrlWithParams string) (*types.Response, error) {
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		return nil, fmt.Errorf("response body read error (api): %s", err.Error())
+		return body, fmt.Errorf("response body read error (api): %s", err.Error())
+	}
+
+	return body, err
+}
+
+func request(UrlWithParams string) (*types.Response, error) {
+	body, err := get(UrlWithParams)
+	if err != nil {
+		return nil, err
 	}
 
 	var response *types.Response
@@ -36,4 +45,13 @@ func request(UrlWithParams string) (*types.Response, error) {
 	}
 
 	return response, nil
+}
+
+func requestWithoutResponse(UrlWithParams string) error {
+	_, err := get(UrlWithParams)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

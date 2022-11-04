@@ -1,6 +1,9 @@
 package types
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Response struct {
 	Ok          bool
@@ -40,6 +43,7 @@ func (r *Result) String() string {
 	if r == nil {
 		return "<nil>"
 	}
+	r.Text = strings.ReplaceAll(r.Text, "\n", " ")
 	return fmt.Sprintf("%+v", *r)
 }
 
