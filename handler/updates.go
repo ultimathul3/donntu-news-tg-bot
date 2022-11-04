@@ -3,10 +3,8 @@ package handler
 import (
 	"donntu-news-tg-bot/api"
 	"donntu-news-tg-bot/logger"
-	"donntu-news-tg-bot/parser"
 	"donntu-news-tg-bot/types"
 	"fmt"
-	"math"
 	"regexp"
 	"strings"
 )
@@ -30,45 +28,33 @@ func handleUpdate(update types.Update) {
 	}
 
 	text = strings.Split(text, "@")[0]
-	text = strings.ReplaceAll(text, " ", "")
+	command := strings.Split(text, " ")
 
-	if regexp.MustCompile(donntuNewsLinkRegex).MatchString(text) {
-		sendNews(chatId, text)
+	if command[0] == "/новость" {
+		if len(command) < 2 {
+			sendInvalidLinkMessage(chatId)
+			return
+		}
+
+		url := command[1]
+
+		if regexp.MustCompile(donntuNewsLinkRegex).MatchString(url) {
+			sendNews(chatId, url)
+		} else {
+			sendInvalidLinkMessage(chatId)
+		}
+	} else if command[1] == "/подписаться" {
+		return
+	} else if command[1] == "/отписаться" {
+		return
 	}
 }
 
-func sendNews(chatId int64, url string) {
-	news, images, err := parser.ParseDonntuNews(url)
-	if err != nil {
-		logger.Log.Info(err.Error())
-		return
-	}
-
-	response, err := api.SendMessage(chatId, news)
+func sendInvalidLinkMessage(chatId int64) {
+	response, err := api.SendMessage(chatId, "Некорректная ссылка\nНеобходимый формат: http://donntu.ru/news/idXXXXXXXXXXXX")
 	if err != nil {
 		logger.Log.Info(err.Error())
 		return
 	}
 	logger.Log.Info(fmt.Sprintf("send message: %+v", response))
-
-	if len(images) > 0 && len(images) <= 20 {
-		requests := 1
-		stop := len(images)
-		if int(math.Ceil(float64(len(images))/10.0)) > 1 {
-			requests = 2
-			stop = 10
-		}
-		for i := 0; i < requests; i++ {
-			if requests == 2 && i == 1 {
-				stop = len(images)
-			}
-
-			err := api.SendPhotoGroup(chatId, images[i*10:stop])
-			if err != nil {
-				logger.Log.Info(err.Error())
-				return
-			}
-		}
-		logger.Log.Info(fmt.Sprintf("send %d images (chat_id: %d): %s", len(images), chatId, images))
-	}
 }

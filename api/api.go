@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-var (
+const (
 	tgApi = "https://api.telegram.org/"
 )
 
