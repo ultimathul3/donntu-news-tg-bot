@@ -16,6 +16,7 @@ func SendMessage(chatId int64, text string) (*types.Response, error) {
 func SendPhotoGroup(chatId int64, photoUrls []string) error {
 	var inputMediaPhoto []types.InputMedia
 
+	// no more than 10 images for 1 message (telegram api limit)
 	if len(photoUrls) > 10 {
 		photoUrls = photoUrls[0:10]
 	}

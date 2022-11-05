@@ -4,7 +4,6 @@ import (
 	"donntu-news-tg-bot/api"
 	"donntu-news-tg-bot/logger"
 	"fmt"
-	"math"
 )
 
 func SendNews(news string, images []string, chatId int64) {
@@ -13,15 +12,22 @@ func SendNews(news string, images []string, chatId int64) {
 		logger.Log.Info(err.Error())
 		return
 	}
+
 	logger.Log.Info(fmt.Sprintf("send message: %+v", response))
 
+	// no more than 20 images in total
 	if len(images) > 0 && len(images) <= 20 {
+		var stop int
 		requests := 1
-		stop := len(images)
-		if int(math.Ceil(float64(len(images))/10.0)) > 1 {
+
+		// 2 messages for >10 images
+		if len(images) > 10 {
 			requests = 2
 			stop = 10
+		} else {
+			stop = len(images)
 		}
+
 		for i := 0; i < requests; i++ {
 			if requests == 2 && i == 1 {
 				stop = len(images)

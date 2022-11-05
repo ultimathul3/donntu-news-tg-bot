@@ -13,7 +13,9 @@ const (
 	tgApi = "https://api.telegram.org/"
 )
 
+// get request to telegram api
 func get(UrlWithParams string) ([]byte, error) {
+	// get access token from .env file
 	accessToken := os.Getenv("ACCESS_TOKEN")
 
 	r, err := http.Get(tgApi + fmt.Sprintf("bot%s/%s",
@@ -32,6 +34,7 @@ func get(UrlWithParams string) ([]byte, error) {
 	return body, err
 }
 
+// request to telegram api with response
 func request(UrlWithParams string) (*types.Response, error) {
 	body, err := get(UrlWithParams)
 	if err != nil {

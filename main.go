@@ -21,12 +21,14 @@ func init() {
 }
 
 func main() {
+	// autocert provides automatic access to certificates from Let's Encrypt
 	certManager := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
 		HostPolicy: autocert.HostWhitelist(os.Getenv("DOMAIN")),
 		Cache:      autocert.DirCache("certs"),
 	}
 
+	// registering a request handler
 	http.HandleFunc("/", handler.HandleRequest)
 
 	server := &http.Server{
@@ -36,7 +38,9 @@ func main() {
 		},
 	}
 
+	// rederect all GET and HEAD requests from 80 to 443 port
 	go http.ListenAndServe(":http", certManager.HTTPHandler(nil))
+	// observing the news
 	go observer.Observe()
 
 	logger.Log.Info("server started")

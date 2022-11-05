@@ -32,6 +32,7 @@ func getDocument(link string) (*goquery.Document, error) {
 	return doc, nil
 }
 
+// formatHtml removes tags that are not supported by the telegram api
 func formatHtml(html string) string {
 	html = replaceTag(html, "img", "", "")
 	html = replaceTag(html, "p", "", "\n\n")
