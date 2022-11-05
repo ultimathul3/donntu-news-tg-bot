@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"donntu-news-tg-bot/db"
 	"donntu-news-tg-bot/handler"
 	"donntu-news-tg-bot/logger"
 	"log"
@@ -15,6 +16,7 @@ import (
 func init() {
 	initLogger()
 	initEnv()
+	initDB()
 }
 
 func main() {
@@ -38,6 +40,13 @@ func main() {
 	logger.Log.Info("server started")
 
 	err := server.ListenAndServeTLS("", "")
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func initDB() {
+	err := db.Init()
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"donntu-news-tg-bot/api"
+	"donntu-news-tg-bot/db"
 	"donntu-news-tg-bot/logger"
 	"donntu-news-tg-bot/types"
 	"fmt"
@@ -43,11 +44,43 @@ func handleUpdate(update types.Update) {
 		} else {
 			sendInvalidLinkMessage(chatId)
 		}
-	} else if command[1] == "/подписаться" {
-		return
-	} else if command[1] == "/отписаться" {
+	} else if command[0] == "/подписаться" {
+		subscribe(chatId)
+	} else if command[0] == "/отписаться" {
+		unsubscribe(chatId)
+	}
+}
+
+func subscribe(chatId int64) {
+	err := db.ChangeSubscribe(chatId, true)
+	if err != nil {
+		logger.Log.Info(fmt.Sprintf("db error: %s", err.Error()))
 		return
 	}
+	logger.Log.Info(fmt.Sprintf("db: chat_id %d subscribed", chatId))
+
+	response, err := api.SendMessage(chatId, "Вы подписались на рассылку новостей")
+	if err != nil {
+		logger.Log.Info(err.Error())
+		return
+	}
+	logger.Log.Info(fmt.Sprintf("send message: %+v", response))
+}
+
+func unsubscribe(chatId int64) {
+	err := db.ChangeSubscribe(chatId, false)
+	if err != nil {
+		logger.Log.Info(fmt.Sprintf("db error: %s", err.Error()))
+		return
+	}
+	logger.Log.Info(fmt.Sprintf("db: chat_id %d unsubscribed", chatId))
+
+	response, err := api.SendMessage(chatId, "Вы отписались от рассылки новостей")
+	if err != nil {
+		logger.Log.Info(err.Error())
+		return
+	}
+	logger.Log.Info(fmt.Sprintf("send message: %+v", response))
 }
 
 func sendInvalidLinkMessage(chatId int64) {
