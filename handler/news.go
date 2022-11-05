@@ -3,18 +3,11 @@ package handler
 import (
 	"donntu-news-tg-bot/api"
 	"donntu-news-tg-bot/logger"
-	"donntu-news-tg-bot/parser"
 	"fmt"
 	"math"
 )
 
-func sendNews(chatId int64, url string) {
-	news, images, err := parser.ParseDonntuNews(url)
-	if err != nil {
-		logger.Log.Info(err.Error())
-		return
-	}
-
+func SendNews(news string, images []string, chatId int64) {
 	response, err := api.SendMessage(chatId, news)
 	if err != nil {
 		logger.Log.Info(err.Error())

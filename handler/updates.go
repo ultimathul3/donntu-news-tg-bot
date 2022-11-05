@@ -4,6 +4,7 @@ import (
 	"donntu-news-tg-bot/api"
 	"donntu-news-tg-bot/db"
 	"donntu-news-tg-bot/logger"
+	"donntu-news-tg-bot/parser"
 	"donntu-news-tg-bot/types"
 	"fmt"
 	"regexp"
@@ -40,7 +41,12 @@ func handleUpdate(update types.Update) {
 		url := command[1]
 
 		if regexp.MustCompile(donntuNewsLinkRegex).MatchString(url) {
-			sendNews(chatId, url)
+			news, images, err := parser.ParseDonntuNews(url)
+			if err != nil {
+				logger.Log.Info(err.Error())
+				return
+			}
+			SendNews(news, images, chatId)
 		} else {
 			sendInvalidLinkMessage(chatId)
 		}

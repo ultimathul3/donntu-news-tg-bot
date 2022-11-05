@@ -5,6 +5,7 @@ import (
 	"donntu-news-tg-bot/db"
 	"donntu-news-tg-bot/handler"
 	"donntu-news-tg-bot/logger"
+	"donntu-news-tg-bot/observer"
 	"log"
 	"net/http"
 	"os"
@@ -36,6 +37,7 @@ func main() {
 	}
 
 	go http.ListenAndServe(":http", certManager.HTTPHandler(nil))
+	go observer.Observe()
 
 	logger.Log.Info("server started")
 
@@ -67,6 +69,7 @@ func initEnv() {
 	check("DOMAIN")
 	check("ACCESS_TOKEN")
 	check("SECRET_TOKEN")
+	check("CHECK_PERIOD")
 }
 
 func initLogger() {

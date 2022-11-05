@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -35,4 +36,27 @@ func ParseDonntuNews(donntuNewsLink string) (string, []string, error) {
 	news := fmt.Sprintf("<strong>%s\n(%s)</strong>\n%s\n\n%s", title, datetime, titleImg, body)
 
 	return news, otherImgs, nil
+}
+
+func ParseLastNews() (link string, datetime time.Time, err error) {
+	doc, err := getDocument("http://donntu.ru/news/")
+	if err != nil {
+		return "", time.Time{}, err
+	}
+
+	link, _ = doc.Find(".news-main").Children().Children().Children().Attr("href")
+	link = "http://donntu.ru" + link
+
+	doc, err = getDocument(link)
+	if err != nil {
+		return "", time.Time{}, err
+	}
+
+	datetimeText := doc.Find("div.field:nth-child(1)").First().Children().Children().Text()
+	datetime, err = time.Parse("02.01.2006 - 15:04", datetimeText)
+	if err != nil {
+		return "", time.Time{}, err
+	}
+
+	return link, datetime, nil
 }

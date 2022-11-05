@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -28,27 +29,14 @@ func Init() error {
 		return err
 	}
 
-	return nil
-}
-
-func ChangeSubscribe(chatId int64, isSubscribed bool) error {
-	rows, err := db.Query("SELECT * FROM subscribers WHERE chat_id=$1;", chatId)
+	rows, err := db.Query("SELECT * FROM last_news;")
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 
-	if rows.Next() {
-		var chatId int64
-
-		rows.Scan(&chatId, nil)
-		rows.Close()
-
-		_, err = db.Exec("UPDATE subscribers SET is_subscribed=$1 WHERE chat_id=$2", isSubscribed, chatId)
-		if err != nil {
-			return err
-		}
-	} else {
-		_, err = db.Exec("INSERT INTO subscribers VALUES ($1, $2);", chatId, isSubscribed)
+	if !rows.Next() {
+		_, err = db.Exec("INSERT INTO last_news VALUES ($1);", time.Now())
 		if err != nil {
 			return err
 		}
